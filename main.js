@@ -9,15 +9,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 var GraphClient = require('./nodegraph');
-var client = new GraphClient(/*app info here*/);
+var client = new GraphClient("daiglemalcolmgmail.onmicrosoft.com", "02379a4d-0f04-4f72-9e75-b7b59540ebcd", 'fi1LFEADy9Xfb2g4uZk12fEjbrF11WcQn3m1Y7ejABo=');
 
 app.get('/', function(req, res) {
     res.sendFile('index.html');
 });
 
+app.get('/users', function(req, res) {
+    res.sendFile(__dirname + '/html/users.html');
+})
+
 app.get('/api/users', function(req, res) {
-    var users = client.listUsers();
-    res.json(users);
+    //console.log("asked to list users");
+    client.listUsers(function(users) {
+        res.send(users);
+        //console.log(users);
+    });
 });
 
 app.get('/api/groups', function(req, res) {
@@ -27,7 +34,6 @@ app.get('/api/groups', function(req, res) {
 });
 
 app.get('/api/groups/:id/members', function(req, res) {
-    //console.log("Got request for group", req.params.id);
     client.listGroupMembers(req.params.id, function(members){
         res.send(members);
     });
@@ -40,5 +46,22 @@ app.post('/api/groups', function(req, res) {
         res.sendStatus(200);
     });
 });
+
+app.post('/api/users', function(req, res) {
+    var name = req.body.name;
+    var password = req.body.password;
+    console.log("Creating user with email", name);
+    client.createUser(name, password, function() {
+        res.sendStatus(200);
+    });
+});
+
+app.delete('/api/users', function(req, res) {
+    var id = req.body.id;
+    console.log("Deleting user with id", id);
+    client.deleteUser(id, function() {
+        res.sendStatus(200);
+    });
+})
 
 app.listen(3000);

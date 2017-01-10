@@ -3,6 +3,7 @@ const GraphService = require('graph-service');
 module.exports = GraphClient;
 
 function GraphClient(tenant_name, app_id, app_secret) {
+    this.tenant_name = tenant_name;
     this.api = new GraphService(tenant_name, app_id, app_secret);
 }
 
@@ -127,12 +128,12 @@ GraphClient.prototype.getUser = function(user_id) {
     });
 }
 
-GraphClient.prototype.listUsers = function() {
+GraphClient.prototype.listUsers = function(callback) {
     this.api.get('/v1.0/users', (err, response) => {
         if (err) {
             console.log(err);
         }
-        console.log(response);
+        callback(response.value);
     });
 }
 
@@ -144,4 +145,39 @@ GraphClient.prototype.listUserDirectGroupMembership = function(user_id) {
         }
         console.log(response);
     });
+}
+
+GraphClient.prototype.createUser = function(username, password, callback) {
+    var displayName = username;
+    var mailNickname = displayName + "-mail";
+
+    var content = {
+        "accountEnabled": true,
+        "displayName": displayName,
+        "mailNickname": mailNickname,
+        "userPrincipalName": displayName + "@" + this.tenant_name,
+        "passwordProfile" : {
+            "forceChangePasswordNextSignIn": false,
+            "password": password
+        }
+    }
+
+    console.log(content);
+
+    this.api.post('/v1.0/users', content, (err, response) => {
+        if (err) {
+            console.log(err);
+        }
+        callback(response);
+    });
+}
+
+GraphClient.prototype.deleteUser = function(id, callback) {
+    var path = '/v1.0/users/' + id;
+    this.api.delete(path, (err, response) => {
+        if (err) {
+            console.log(err);
+        }
+        callback(response);
+    })
 }

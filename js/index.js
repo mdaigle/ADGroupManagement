@@ -8,7 +8,7 @@ $(document).ready(function() {
         });
     });
 
-    $.get( "http://localhost:3000/api/groups", function(groups) {
+    $.get("http://localhost:3000/api/groups", function(groups) {
         groups.forEach(function(group) {
 
             // Create a div for the group
